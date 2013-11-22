@@ -1,0 +1,24 @@
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src='/socket.io/socket.io.js'></script>
+<script>
+    $(function(){
+    var socket = io.connect('http://localhost:8080');
+    socket.on('connect',function(data){
+        nickname = prompt('What is your nickname?');
+        socket.emit('join',nickname);
+    })
+    socket.on('messages',function(data){
+        $('#messages').append($('<span>'+data+'</span>'));
+    })
+    $('#chat_form').submit(function(){
+        var message = $('#chat_input').val();
+        socket.emit('messages',message);
+        return false;
+    });
+});
+</script>
+<form id='chat_form'>
+    <input id='chat_input'>
+    <input type='submit'>
+</form>
+<div id='messages'></div>
