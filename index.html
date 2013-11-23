@@ -1,24 +1,127 @@
-<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-<script src='/socket.io/socket.io.js'></script>
-<script>
-    $(function(){
-    var socket = io.connect('http://localhost:8080');
-    socket.on('connect',function(data){
-        nickname = prompt('What is your nickname?');
-        socket.emit('join',nickname);
-    })
-    socket.on('messages',function(data){
-        $('#messages').append($('<span>'+data+'</span>'));
-    })
-    $('#chat_form').submit(function(){
-        var message = $('#chat_input').val();
-        socket.emit('messages',message);
-        return false;
-    });
-});
-</script>
-<form id='chat_form'>
-    <input id='chat_input'>
-    <input type='submit'>
-</form>
-<div id='messages'></div>
+<!doctype html>
+<html>
+
+<head>
+    <title>Online chatroom powered by nodejs and redis.</title>
+</head>
+<style type="text/css">
+    body{
+            <!--background:red;-->
+            margin:0 auto;
+        }
+        header{
+            width:800px;
+            margin:0 auto;
+            text-align:center;
+        }
+        ul li{
+            list-style-type:none;
+        }
+        div.wrapper{
+            width:800px;
+            margin:0 auto;
+        }
+        div.wrapper .userlist{
+            float:left;
+            width:188px;
+/*            border:1px solid #ccc;*/
+            height:300px;
+
+        }
+        div.wrapper .chatroom{
+            width:598px;
+            float:right;
+/*            border:1px solid #ccc;*/
+
+        }
+        div.wrapper .chatroom #messages{
+            height:300px;
+        }
+        div.wrapper .chatroom .inputarea{
+        }
+        div.wrapper .chatroom .inputarea #chat_input{
+            height:26px;
+            line-height:26px;
+            width:500px;
+            margin:0;
+            padding:0;
+        }
+        div.wrapper .chatroom .inputarea #submitbtn{
+            width:80px;
+            height:26px;
+            line-height:26px;
+            margin:0;
+            padding:0;
+            margin-left:5px;
+        }
+        div.wrapper .clear{
+            clear:both;
+        }
+</style>
+
+<body>
+    <header>
+        <h1>on line chatroom</h1>
+    </header>
+
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src='/socket.io/socket.io.js'></script>
+    <script>
+        $(function() {
+            var socket = io.connect('http://localhost:8080');
+            var nickname;
+//            socket.on('connect', function(data) {
+//                console.log('connected');
+//            });
+            socket.on('connect',function(){
+                if(!nickname){
+                     nickname = prompt('What is your nickname?');
+                     socket.emit('join', nickname);
+                } else{
+                        socket.emit('join', nickname);
+                }
+            });
+            socket.on('messages', function(data) {
+//                console.log(data);
+                $('#messages').append($('<div>' + data + '</div>'));
+            });
+            socket.on('addchatter',function(name){
+                console.log(name);
+                var chatter =$( '<li>'+name+'</li>').data('name',name);
+                $('#memberlist').append(chatter);
+            });
+            socket.on('removechatter',function(name){
+                    $('#memberlist li[data-name='+name+']').remove();
+                });
+//            });
+            $('#chat_form').submit(function() {
+                var message = $('#chat_input').val();
+                socket.emit('messages', message);
+                $('#chat_input').val("");
+                $('#messages').append($('<div>' + nickname + ':' + message + '</div>'));
+                return false;
+            });
+        });
+    </script>
+    <div class='wrapper'>
+        <div class='userlist'>
+            <ul id="memberlist">
+
+            </ul>
+        </div>
+        <div class='chatroom'>
+            <div id='messages'>
+            </div>
+            <div class='inputarea'>
+                <form id='chat_form'>
+                    <input id='chat_input'>
+                    <input type='submit' id="submitbtn">
+                </form>
+            </div>
+        </div>
+        <div class='clear'></div>
+    </div>
+
+</body>
+
+</html>
